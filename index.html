@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>丹药对比工具</title>
+<style>
+:root{
+  --bg:#0f1420; --card:#1a2233; --border:#2a3550;
+  --text:#e6ebf5; --muted:#8b98b3;
+  --a:#4da3ff; --b:#ff9f43; --diff:#ffd166; --same:#3ddc97; --onlya:#ff6b81; --onlyb:#b388ff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;
+  padding:12px;max-width:900px;margin:0 auto}
+h1{font-size:20px;text-align:center;margin:8px 0 14px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px}
+.row2{display:flex;gap:10px;flex-wrap:wrap}
+.row2>div{flex:1;min-width:260px}
+label{display:block;font-size:14px;margin-bottom:6px;color:var(--muted)}
+label .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+textarea{width:100%;height:150px;background:#0d111c;border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-size:13px;padding:8px;resize:vertical;font-family:monospace}
+button{display:block;width:100%;padding:13px;font-size:17px;font-weight:600;border:none;border-radius:8px;
+  background:linear-gradient(135deg,#4da3ff,#b388ff);color:#fff;cursor:pointer;margin:4px 0}
+button:active{opacity:.8}
+.btns{display:flex;gap:10px}
+.btns button{background:#2a3550;font-size:14px;padding:9px}
+#result{display:none}
+.stats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.stat{flex:1;min-width:100px;background:#0d111c;border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center}
+.stat b{display:block;font-size:22px}
+.stat span{font-size:12px;color:var(--muted)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tab{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:#0d111c;color:var(--muted);
+  font-size:13px;cursor:pointer}
+.tab.on{background:#2a3550;color:var(--text);border-color:#4da3ff}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:7px 6px;border-bottom:1px solid var(--border);text-align:left}
+th{color:var(--muted);font-size:12px;font-weight:500}
+td.num{text-align:right;font-family:monospace}
+.dA{color:var(--a)} .dB{color:var(--b)}
+.up{color:var(--onlya)} .down{color:var(--onlyb)}
+.tag-onlya{color:var(--onlya)} .tag-onlyb{color:var(--onlyb)}
+.hint{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6}
+</style>
+</head>
+<body>
+<h1>⚗️ 丹药对比工具</h1>
+
+<div class="card">
+  <div class="row2">
+    <div>
+      <label><span class="dot" style="background:var(--a)"></span>账号 1 丹药</label>
+      <textarea id="txtA" placeholder="把账号1的丹药列表粘贴到这里…"></textarea>
+    </div>
+    <div>
+      <label><span class="dot" style="background:var(--b)"></span>账号 2 丹药</label>
+      <textarea id="txtB" placeholder="把账号2的丹药列表粘贴到这里…"></textarea>
+    </div>
+  </div>
+  <button id="btnGo">开始对比</button>
+  <div class="btns">
+    <button id="btnPasteA">粘贴1</button>
+    <button id="btnPasteB">粘贴2</button>
+    <button id="btnClear">清空</button>
+  </div>
+  <p class="hint">说明：自动忽略「水晶珠 / 返回游戏」等非丹药行；同名丹药次数自动累加；
+    全角半角括号视为相同。数据只在本页面处理，不会上传。</p>
+</div>
+
+<div class="card" id="result">
+  <div class="stats" id="stats"></div>
+  <div class="tabs" id="tabs"></div>
+  <div id="tableBox"></div>
+</div>
+
+<script>
+// 解析文本 -> Map(名称 -> 总次数)
+function parse(text){
+  const map = new Map();
+  for (let line of text.split(/\r?\n/)){
+    line = line.trim();
+    // 形如 “【名字】x123” 或 “〖名字〗（xx）x123” 或 “【名字】(xx)x123”
+    const m = line.match(/^[【〖[](.+?)[】〗\]]\s*[（(]?(.*?)[）)]?\s*[xX×]\s*(\d+)\s*$/);
+    if (!m) continue;
+    // 规范化：括号内容并入名称，全角转半角，去空格
+    let name = m[1];
+    const sub = m[2].replace(/[（）]/g, ch => ch === '（' ? '(' : ')');
+    if (sub) name += '(' + sub + ')';
+    name = name.replace(/[\s　]/g, '');
+    if (/^(水晶珠|返回游戏|返回场景|=+)$/.test(name)) continue;
+    map.set(name, (map.get(name) || 0) + Number(m[3]));
+  }
+  return map;
+}
+
+let dataA, dataB, view = 'diff';
+
+function fmt(n){ return n === undefined ? '—' : n.toLocaleString(); }
+
+function buildRows(){
+  const keys = new Set([...dataA.keys(), ...dataB.keys()]);
+  const rows = [];
+  for (const k of keys){
+    const a = dataA.get(k), b = dataB.get(k);
+    let type;
+    if (a === undefined) type = 'onlyB';
+    else if (b === undefined) type = 'onlyA';
+    else if (a !== b) type = 'diff';
+    else type = 'same';
+    rows.push({ name:k, a, b, d:(b||0)-(a||0), type });
+  }
+  rows.sort((x,y)=> x.name.localeCompare(y.name,'zh'));
+  return rows;
+}
+
+function render(rows){
+  const all = rows;
+  const counts = {
+    diff:  all.filter(r=>r.type==='diff').length,
+    onlyA: all.filter(r=>r.type==='onlyA').length,
+    onlyB: all.filter(r=>r.type==='onlyB').length,
+    same:  all.filter(r=>r.type==='same').length
+  };
+  document.getElementById('stats').innerHTML =
+    `<div class="stat"><b class="dA">${dataA.size}</b><span>账号1 丹药种类</span></div>` +
+    `<div class="stat"><b class="dB">${dataB.size}</b><span>账号2 丹药种类</span></div>` +
+    `<div class="stat"><b style="color:var(--diff)">${counts.diff}</b><span>数量不同</span></div>` +
+    `<div class="stat"><b style="color:var(--onlya)">${counts.onlyA}</b><span>仅账号1有</span></div>` +
+    `<div class="stat"><b style="color:var(--onlyb)">${counts.onlyB}</b><span>仅账号2有</span></div>`;
+
+  const tabs = [
+    ['diff',  `数量不同 (${counts.diff})`],
+    ['onlyA', `仅账号1 (${counts.onlyA})`],
+    ['onlyB', `仅账号2 (${counts.onlyB})`],
+    ['both',  `两边都有 (${counts.diff + counts.same})`],
+    ['same',  `完全一致 (${counts.same})`],
+    ['all',   `全部 (${all.length})`]
+  ];
+  document.getElementById('tabs').innerHTML = tabs.map(([k, t]) =>
+    `<div class="tab${view===k?' on':''}" data-v="${k}">${t}</div>`).join('');
+
+  let list = all;
+  if (view === 'diff')  list = all.filter(r=>r.type==='diff');
+  if (view === 'onlyA') list = all.filter(r=>r.type==='onlyA');
+  if (view === 'onlyB') list = all.filter(r=>r.type==='onlyB');
+  if (view === 'same')  list = all.filter(r=>r.type==='same');
+  if (view === 'both')  list = all.filter(r=>r.type!=='onlyA' && r.type!=='onlyB');
+  // 数量不同视图按差值绝对值排序，更有用
+  if (view === 'diff') list = [...list].sort((x,y)=>Math.abs(y.d)-Math.abs(x.d));
+
+  const rowsHtml = list.map(r=>{
+    let diffCell = '';
+    if (r.type === 'diff') diffCell = r.d > 0
+      ? `<span class="down">+${r.d}</span>` : `<span class="up">${r.d}</span>`;
+    else if (r.type === 'onlyA') diffCell = '<span class="tag-onlya">仅1</span>';
+    else if (r.type === 'onlyB') diffCell = '<span class="tag-onlyb">仅2</span>';
+    else diffCell = '<span style="color:var(--same)">一致</span>';
+    return `<tr><td>${r.name}</td><td class="num dA">${fmt(r.a)}</td>` +
+           `<td class="num dB">${fmt(r.b)}</td><td class="num">${diffCell}</td></tr>`;
+  }).join('');
+
+  document.getElementById('tableBox').innerHTML = all.length ?
+    `<table><thead><tr><th>丹药</th><th style="text-align:right">账号1</th>` +
+    `<th style="text-align:right">账号2</th><th style="text-align:right">差异</th></tr></thead>` +
+    `<tbody>${rowsHtml}</tbody></table>` :
+    '<p class="hint">没有识别到丹药数据，请检查粘贴内容。</p>';
+
+  document.getElementById('result').style.display = 'block';
+}
+
+document.getElementById('btnGo').onclick = ()=>{
+  const ta = document.getElementById('txtA').value, tb = document.getElementById('txtB').value;
+  if (!ta.trim() || !tb.trim()){ alert('请把两个账号的丹药列表都粘贴进来'); return; }
+  dataA = parse(ta); dataB = parse(tb);
+  render(buildRows());
+  document.getElementById('result').scrollIntoView({behavior:'smooth'});
+};
+
+document.getElementById('tabs').addEventListener('click', e=>{
+  const v = e.target.dataset && e.target.dataset.v;
+  if (!v) return;
+  view = v;
+  render(buildRows());
+});
+
+async function pasteInto(id){
+  try{
+    document.getElementById(id).value = await navigator.clipboard.readText();
+  }catch(err){
+    alert('浏览器未授权剪贴板，请手动在框内长按粘贴');
+  }
+}
+document.getElementById('btnPasteA').onclick = ()=>pasteInto('txtA');
+document.getElementById('btnPasteB').onclick = ()=>pasteInto('txtB');
+document.getElementById('btnClear').onclick = ()=>{
+  document.getElementById('txtA').value = '';
+  document.getElementById('txtB').value = '';
+  document.getElementById('result').style.display = 'none';
+};
+</script>
+</body>
+</html>
