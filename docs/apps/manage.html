@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>应用管理器 · 使用说明</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<div class="page">
+  <nav class="top">
+    <a class="back" href="../../index.html" data-back-apps>← 返回应用中心</a>
+    <span class="tag">/manage</span>
+  </nav>
+
+  <header class="hero">
+    <div class="app-icon">应</div>
+    <div>
+      <h1>应用管理器</h1>
+      <p class="sub">v0.2 · 应用目录 /manage</p>
+    </div>
+  </header>
+
+  <article>
+    <p><strong>应用管理器</strong>是设备的启动入口：开机后先按 <code>device.json</code> 的配置启动默认应用，应用退出或启动失败时回到管理器；也可以在开机时按住上/下键，跳过默认应用直接进入管理器。管理器把根目录下所有带 <code>app.json</code> 的应用列在 400×300 三色墨水屏上，并可将选中的应用设为默认应用。</p>
+
+    <h2>功能简介</h2>
+    <ul>
+      <li>扫描根目录中所有包含 <code>app.json</code> 的文件夹，按显示名称排序，管理器自身固定排在第一行。</li>
+      <li>每页显示 7 个应用，顶部红色标题栏显示页码，底部显示应用总数与按键提示。</li>
+      <li>默认应用右侧标有红色「默认」，选中行用红色描边框标识，文字均为黑色。</li>
+      <li>按「确定」把选中的应用写回 <code>device.json</code> 并立即启动，下次开机自动运行它。</li>
+      <li>开机时按住 GPIO39 或 GPIO40，可强制进入管理器，不启动默认应用。</li>
+    </ul>
+
+    <h2>开机启动流程</h2>
+    <p>根目录 <code>main.py</code> 只调用 <code>manage.boot()</code>，由它决定这次开机运行什么：</p>
+    <pre><code>上电
+ └─ main.py → manage.boot()
+     ├─ 按住 GPIO39 / GPIO40？── 是 ──→ 应用管理器
+     └─ 否
+         ├─ 读取 device.json 的「默认应用」
+         ├─ 未配置 / 应用不存在 / 没有入口脚本 / 默认就是管理器 ──→ 应用管理器
+         └─ 启动默认应用
+             └─ 应用结束或抛异常 ──→ 应用管理器（选中默认应用所在行）</code></pre>
+    <ul>
+      <li>开机检测在上电后约 200&nbsp;ms 的窗口内进行，连续 3 次读到低电平即判定为按住。</li>
+      <li>默认应用抛出的异常会被捕获并打印到串口，随后照常进入管理器，不会卡死。</li>
+      <li>GPIO0 是 BOOT 键，复位瞬间被拉低会进入下载模式，因此开机强制键使用 GPIO39/GPIO40。</li>
+    </ul>
+
+    <h2>界面与按键</h2>
+    <table>
+      <tr><th>区域</th><th>内容</th></tr>
+      <tr><td>顶部红栏</td><td>标题「应用管理器」与当前页码，黑字</td></tr>
+      <tr><td>列表</td><td>红色序号、应用名称、版本号；默认应用带红色「默认」标记</td></tr>
+      <tr><td>底部</td><td>应用总数与按键提示</td></tr>
+    </table>
+    <table>
+      <tr><th>按键</th><th>引脚</th><th>作用</th></tr>
+      <tr><td>上</td><td>GPIO40</td><td>选中上一个应用，首尾循环</td></tr>
+      <tr><td>下</td><td>GPIO39</td><td>选中下一个应用，首尾循环</td></tr>
+      <tr><td>确定</td><td>GPIO0</td><td>设为默认应用并启动</td></tr>
+    </table>
+    <p>三个按键均为低电平触发（内部上拉），在<strong>松开时生效</strong>；开机时已经按住的键会被忽略一次，避免进入管理器后误触发。</p>
+
+    <h2>选择与默认应用</h2>
+    <p>默认应用记录在根目录 <code>device.json</code> 中，值为应用的 <code>app_dir</code>（也兼容文件夹名或显示名称）：</p>
+    <pre><code>{"默认应用":"manage"}</code></pre>
+    <ul>
+      <li>按「确定」时，管理器先把选中的应用写回 <code>device.json</code>（保留其它字段），再启动它；选中「应用管理器」自身时只更新配置并重绘。</li>
+      <li>没有入口脚本的应用（例如 <code>driver</code> 驱动库）不会写入配置，界面提示「无法启动」。</li>
+      <li>写入失败时提示「设置默认失败」且不启动应用，方便及时发现文件系统问题。</li>
+    </ul>
+
+    <h2>应用目录约定</h2>
+    <p>在根目录新建文件夹，放入 <code>app.json</code> 和入口脚本即可被识别：</p>
+    <pre><code>/
+├─ manage/          应用管理器
+├─ scratch/
+│   ├─ app.json
+│   └─ main.py
+└─ device.json      默认应用配置</code></pre>
+    <table>
+      <tr><th>字段</th><th>必填</th><th>说明</th></tr>
+      <tr><td><code>app_name</code></td><td>否</td><td>列表显示名称，缺省用文件夹名</td></tr>
+      <tr><td><code>app_version</code></td><td>否</td><td>版本号，缺省留空</td></tr>
+      <tr><td><code>app_dir</code></td><td>否</td><td>应用目录名，缺省用文件夹名；也是写入 device.json 的标识</td></tr>
+      <tr><td><code>entry</code></td><td>否</td><td>入口脚本名，缺省依次查找 main.py、&lt;app_dir&gt;.py</td></tr>
+    </table>
+    <p>入口脚本优先级为 <code>entry</code> → <code>main.py</code> → <code>&lt;app_dir&gt;.py</code>，找到第一个存在的文件即运行。</p>
+    <pre><code>{"app_name":"图形化编程","app_version":"0.1","app_dir":"scratch"}</code></pre>
+
+    <h2>应用启动与返回</h2>
+    <ol>
+      <li>读取入口脚本源码，在独立命名空间中执行，<code>__name__</code> 为 <code>__main__</code>，<code>__file__</code> 为入口路径。</li>
+      <li>执行期间工作目录切换到应用目录，应用内的相对路径以自身目录为准，该目录同时加入 <code>sys.path</code>。</li>
+      <li><code>driver/</code> 已在 <code>sys.path</code> 中，应用可以直接 <code>import epd4in2b</code>。</li>
+      <li>入口脚本结束或抛出异常后，恢复工作目录与 <code>sys.path</code>，回收内存，重新扫描应用并回到管理器；异常会显示「启动失败」提示页。</li>
+    </ol>
+    <p>应用要回到管理器，让入口脚本自然结束或 <code>return</code> 即可；长期运行的应用需要自己提供退出入口。</p>
+
+    <h2>刷新与串口接口</h2>
+    <p>三色墨水屏不支持局部刷新，翻页、启动返回、设置默认都会触发一次整屏重绘，约需 2~4 秒，期间屏幕闪烁属于正常现象。驱动的字库位于 <code>driver/</code>，管理器会自动处理加载路径。</p>
+    <p>按键不可用或没有接按键时，可在串口 REPL 中直接调用：</p>
+    <ul>
+      <li><code>manage.list_apps()</code>：打印扫描结果</li>
+      <li><code>manage.next()</code> / <code>manage.prev()</code>：切换选中</li>
+      <li><code>manage.ok()</code>：设为默认并启动</li>
+      <li><code>manage.show()</code>：按当前状态重绘</li>
+      <li><code>manage.refresh()</code>：重新扫描并重绘</li>
+      <li><code>manage.main()</code>：进入管理器主循环</li>
+    </ul>
+
+    <h2>常见问题</h2>
+    <h3>开机没有启动默认应用？</h3>
+    <p>依次检查 <code>device.json</code> 是否存在、字段名是否为「默认应用」、应用文件夹是否还在、入口脚本是否存在；串口会输出 <code>[manage]</code> 开头的判定日志。按住上/下键开机会主动跳过默认应用，属于正常现象。</p>
+    <h3>为什么设置默认应用也要等几秒？</h3>
+    <p>按「确定」后需要写文件、启动应用并整屏刷新，三色屏只能全刷，耗时主要来自屏幕。</p>
+    <h3>应用启动失败怎么办？</h3>
+    <p>屏幕会显示「启动失败」和异常摘要，完整堆栈在串口。修复后让应用正常结束或重新上电即可。</p>
+    <h3>新增应用后列表没有变化？</h3>
+    <p>应用必须位于根目录的文件夹内并带有 <code>app.json</code>。应用退出返回、在串口执行 <code>manage.refresh()</code> 或重新上电都会重新扫描。</p>
+    <h3>驱动文件夹为什么不能设为默认？</h3>
+    <p><code>driver</code> 没有入口脚本，管理器会拒绝把它写入默认应用，避免开机无法启动。</p>
+  </article>
+
+  <footer>墨水屏应用管理器 · 应用使用说明</footer>
+</div>
+<script src="../help.js"></script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>墨水屏网页制作WIFI版 · 使用说明</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<div class="page">
+  <nav class="top">
+    <a class="back" href="../../index.html" data-back-apps>← 返回应用中心</a>
+    <span class="tag">/web</span>
+  </nav>
+
+  <header class="hero">
+    <div class="app-icon">墨</div>
+    <div>
+      <h1>墨水屏网页制作WIFI版</h1>
+      <p class="sub">v0.1 · 400×300 红黑白 · 应用目录 /web</p>
+    </div>
+  </header>
+
+  <article>
+    <p>这个应用会把设备变成一个 Wi-Fi 热点，并在设备上运行一个微型网页服务器。手机或电脑连上热点后，用浏览器打开「小小网页设计师」，就能在 6 个 HTML/CSS 关卡里边学边做，最后把 400×300 的红黑白电子桌牌保存到墨水屏。</p>
+    <p><strong>整个使用过程不需要联网、不需要安装 App、不需要账号。</strong>页面由设备直接提供，手机只负责编辑和预览。</p>
+    <p><strong>快速开始：</strong>安装「必装驱动」和本应用 → 设为默认应用或从设备应用管理器启动 → 连接设备热点 → 浏览器打开 <code>http://192.168.4.1/</code> → 编辑并点击「保存到墨水屏」。</p>
+
+    <h2>功能简介</h2>
+    <ul>
+      <li><strong>设备热点 + 本地网页：</strong>设备启动后创建 Wi-Fi 热点，并运行 HTTP 服务器，不依赖外网。</li>
+      <li><strong>6 关 HTML/CSS 闯关：</strong>从 <code>&lt;h1&gt;</code>、<code>&lt;p&gt;</code> 到颜色、背景和圆角卡片，边改边看。</li>
+      <li><strong>400×300 墨水屏预览：</strong>右侧按红、黑、白三色模拟最终显示效果。</li>
+      <li><strong>一键保存到墨水屏：</strong>把预览转换成黑白/红色位图，上传到设备并立即刷新。</li>
+      <li><strong>离线可用：</strong>页面、编辑器和任务都在设备里，手机连上设备热点即可使用。</li>
+    </ul>
+
+    <h2>使用条件</h2>
+    <ul>
+      <li>已正确安装并能启动本应用的设备：ESP32-S3 开发板 + 4.2 英寸 400×300 红黑白墨水屏（GDEY042Z98 / SSD1683，与本项目驱动匹配）。本项目按 ESP32-S3 验证，带 <code>network</code> 模块的同类开发板可自行适配。</li>
+      <li>应用中心已安装<strong>必装驱动</strong>。<code>web.py</code> 通过 <code>from driver import epd4in2b</code> 调用屏幕驱动，缺少它时网页仍能打开，但启动屏和保存后的刷新不会生效。</li>
+      <li>手机或电脑支持 2.4GHz Wi-Fi，并使用较新的浏览器；建议使用 Chrome 或 Edge，Safari 等现代浏览器也可以尝试，保存功能以实际测试为准。</li>
+      <li>设备供电稳定。墨水屏整屏刷新需要几秒到十几秒，刷新期间不要断电。</li>
+      <li>设备端能正常运行本应用，串口日志没有持续报错。</li>
+    </ul>
+
+    <h2>安装与启动</h2>
+    <ol>
+      <li>在应用中心的「应用」视图先安装<strong>必装驱动</strong>，再找到「墨水屏网页制作WIFI版」并点击安装。</li>
+      <li>安装完成后，点击应用卡片上的星标，把它设为默认应用；设备重启后会自动进入本应用。也可以不设默认，直接在设备端的「应用管理器」里选择它并确认启动。</li>
+      <li>设备启动后会创建 Wi-Fi 热点，并在墨水屏上显示热点名称、密码和 IP 地址。</li>
+      <li>手机或电脑连接该热点。设备检测到客户端连接后，才会启动网页服务；连接后等几秒再打开浏览器。</li>
+      <li>浏览器访问 <code>http://192.168.4.1/</code>，进入「小小网页设计师」。</li>
+    </ol>
+    <p><strong>注意：</strong>请通过 <code>http://192.168.4.1/</code> 打开页面，不要直接双击电脑里的 <code>index.html</code>；否则「保存到墨水屏」找不到设备。</p>
+
+    <h3>默认热点信息</h3>
+    <table>
+      <tr><th>项目</th><th>默认值</th><th>说明</th></tr>
+      <tr><td>热点名称</td><td><code>MP-AP-XXXXXX</code></td><td><code>MP-AP-</code> + 芯片唯一 ID 后 3 字节（ESP32 上即 MAC 后 6 位）；以墨水屏显示为准</td></tr>
+      <tr><td>热点密码</td><td><code>12345678</code></td><td>可在应用的 <code>web.py</code> 中修改</td></tr>
+      <tr><td>网页地址</td><td><code>http://192.168.4.1/</code></td><td>默认端口 80，不要用 <code>https</code>，也不用加端口号</td></tr>
+      <tr><td>启动屏内容</td><td>SSID / PWD / IP</td><td>设备启动时先把这些信息显示到墨水屏</td></tr>
+    </table>
+    <p>如果手机提示「此 WLAN 无法访问互联网」，选择<strong>保持连接</strong>或<strong>仍然连接</strong>。这个热点只用于访问设备，本身不提供外网。</p>
+    <p><strong>安全提示：</strong>默认密码 <code>12345678</code> 只适合临时使用。同一热点下的设备都可以访问这个网页，建议把 <code>AP_PASSWORD</code> 改成至少 8 位的密码。</p>
+
+    <h3>可选：STA 模式（连接路由器）</h3>
+    <p>默认的 AP 模式最简单，不需要路由器。如果你希望设备连接家里的 Wi-Fi，可以使用 STA 模式：在墨水屏显示热点信息、手机还没有连接时，按开发板上的 <strong>BOOT</strong> 键（GPIO0），设备会尝试切换。</p>
+    <p>当前代码中的 STA 账号是示例值 <code>XMU</code> / <code>12345678</code>。使用前请打开应用目录下的 <code>web.py</code>（源码对应 <code>app/web/web.py</code>），修改 <code>_switch_to_sta()</code> 里的 <code>STA_SSID</code> 和 <code>STA_PASSWORD</code>，保存到设备后重启。</p>
+    <p>连接成功后，墨水屏会显示 <code>WiFi STA Mode</code> 和新的 IP 地址；手机或电脑连接同一个路由器，再访问 <code>http://新IP/</code>。如果连接失败，AP 热点已经在切换时关闭，网页会无法访问，重启设备即可恢复 AP 模式。</p>
+    <p><strong>提示：</strong>BOOT 键只在「等待手机连接」阶段生效；网页服务已经启动后再按，不会切换模式。不熟悉代码修改时，建议一直使用默认的 AP 模式。</p>
+
+    <h2>网页界面</h2>
+    <p>打开页面后，标题是「小小网页设计师」。页面分为三栏，窄屏时会自动上下排列：</p>
+    <table>
+      <tr><th>区域</th><th>作用</th></tr>
+      <tr><td>左侧「任务闯关」</td><td>查看当前关卡、任务说明、提示和小抄；点击关卡可以切换。</td></tr>
+      <tr><td>中间「编程区」</td><td>上面写 HTML，下面写 CSS；输入时右侧自动更新，按 Tab 会插入两个空格。</td></tr>
+      <tr><td>右侧「墨水屏预览」</td><td>400×300 红黑白预览，底部显示状态提示和完成进度。</td></tr>
+    </table>
+
+    <p><img src="img/web_editor.png" alt="小小网页设计师界面：左侧任务闯关、中间 HTML/CSS 编程区、右侧 400×300 墨水屏预览"></p>
+    <p><strong>上图：</strong>桌面浏览器中的三栏布局。当前是第 1 关，右侧预览按 400×300 显示；窗口变窄时预览区会移到下方，手机上三栏上下排列。</p>
+
+    <h3>顶部按钮</h3>
+    <table>
+      <tr><th>按钮</th><th>作用</th></tr>
+      <tr><td>提示</td><td>显示当前关卡的知识点和示例代码。</td></tr>
+      <tr><td>重置本关</td><td>把当前关卡的 HTML/CSS 恢复为初始模板，操作前会弹窗确认。</td></tr>
+      <tr><td>检查任务</td><td>检查当前关卡是否完成；完成后弹窗提示，可以继续修改或进入下一关。</td></tr>
+      <tr><td>保存到墨水屏</td><td>把右侧预览转换成红黑白图像，上传到设备并刷新屏幕。</td></tr>
+    </table>
+
+    <h3>6 个关卡</h3>
+    <table>
+      <tr><th>关卡</th><th>学习内容</th><th>任务</th></tr>
+      <tr><td>1. 写上我的名字</td><td><code>&lt;h1&gt;</code></td><td>用大标题写上自己的名字</td></tr>
+      <tr><td>2. 加上班级信息</td><td><code>&lt;p&gt;</code></td><td>在名字下面增加班级段落</td></tr>
+      <tr><td>3. 给名字换颜色</td><td>CSS <code>color</code></td><td>给 <code>h1</code> 设置文字颜色</td></tr>
+      <tr><td>4. 设计桌牌背景</td><td><code>background</code> / <code>background-color</code></td><td>给页面或卡片增加背景</td></tr>
+      <tr><td>5. 做一张圆角卡片</td><td><code>class</code> + <code>border-radius</code></td><td>给 <code>.card</code> 增加圆角</td></tr>
+      <tr><td>6. 完成我的电子桌牌</td><td>综合运用</td><td>同时使用 color、background 和 border-radius 完成作品</td></tr>
+    </table>
+    <p>完成记录会保存在当前浏览器里，换浏览器、清除站点数据或换设备访问时，进度可能不同。点击其他关卡会载入该关卡的初始模板，当前编辑区里未备份的修改会被替换；想保留代码请先复制到电脑。</p>
+    <p>刷新页面后会回到第 1 关的模板。编辑区的代码不会写回设备，也不会上传到设备文件系统；「保存到墨水屏」保存的是渲染后的图片，不是 HTML/CSS 源文件。</p>
+
+    <h2>保存到墨水屏</h2>
+    <ol>
+      <li>在右侧预览里确认排版和颜色。预览画布固定为 400×300。</li>
+      <li>点击顶部「保存到墨水屏」。</li>
+      <li>页面会把预览渲染成 400×300 图像，再按红、黑、白三色转换成两个 1 位位图，共 30000 字节，上传到设备的 <code>/save.img</code>。</li>
+      <li>设备把数据保存为 <code>preview.img</code>，然后驱动墨水屏整屏刷新。</li>
+      <li>页面显示「已保存到墨水屏」后，仍以屏幕是否实际刷新为准；整屏刷新需要几秒到十几秒，期间不要断电或关闭设备。</li>
+    </ol>
+    <p><strong>只保存画面：</strong>保存操作不会修改设备里的 <code>web/index.html</code>，也不会把 HTML/CSS 写回设备。下次打开网页仍是关卡模板，需要保留代码请自行复制。</p>
+    <p><strong>启动屏会覆盖画面：</strong>应用重新启动时，会先把 Wi-Fi 热点信息写入 <code>preview.img</code> 并显示；之前保存的设计图会被启动屏替换。需要时重新打开网页保存一次即可。</p>
+    <p>如果页面提示「截图失败」，通常是 HTML 里引用了无法访问的外部图片、在线字体或复杂资源。先改用纯 CSS、系统字体和内联内容再试。</p>
+
+    <h2>编写建议</h2>
+    <ul>
+      <li>按 <strong>400×300</strong> 设计。预览里已经固定了画布尺寸，页面内容不要超出这个范围，建议给 <code>html, body</code> 设置 <code>margin: 0</code> 和 <code>overflow: hidden</code>。</li>
+      <li>优先使用<strong>纯黑、纯白、纯红</strong>（例如 <code>#000000</code>、<code>#ffffff</code>、<code>#ff0000</code>）和高对比度色块。灰色、渐变、照片和很细的线条在三色化后可能变成黑块或直接消失。</li>
+      <li>颜色会按「红 / 黑 / 白」三色化：偏红且足够鲜艳的颜色进入红色通道，偏暗的进入黑色，其余为白色。以最终屏幕效果为准。</li>
+      <li>AP 模式下手机没有外网，外部图片、在线字体和 CDN 资源可能加载失败。建议使用系统字体、emoji、纯 CSS 图形和内联样式。</li>
+      <li>手机屏幕较窄时，预览区可能需要横向滚动；条件允许时用电脑编辑更顺手。</li>
+      <li>设备一次只处理一个网页请求。保存时不要同时刷新多个页面或上传大文件，等当前操作完成后再继续。</li>
+    </ul>
+
+    <h2>源码与自定义</h2>
+    <p>应用安装到设备后位于 <code>/web</code> 目录，和网页相关的只有两个文件：</p>
+    <table>
+      <tr><th>文件</th><th>作用</th></tr>
+      <tr><td><code>web.py</code></td><td>创建 Wi-Fi 热点（或连接路由器）、运行 HTTP 服务器、绘制启动屏、接收 <code>/save.img</code> 并刷新墨水屏。</td></tr>
+      <tr><td><code>index.html</code></td><td>「小小网页设计师」的全部页面：关卡数据、HTML/CSS 编辑器、400×300 预览和三色化上传。</td></tr>
+    </table>
+    <p>屏幕驱动不在此目录中：<code>web.py</code> 使用 <code>from driver import epd4in2b</code>，读取的是「必装驱动」写入的 <code>/driver/epd4in2b.py</code>。</p>
+
+    <h3>可修改的常量</h3>
+    <table>
+      <tr><th>常量</th><th>默认值</th><th>说明</th></tr>
+      <tr><td><code>AP_SSID_PREFIX</code></td><td><code>MP-AP</code></td><td>热点名称前缀，后面自动追加芯片 ID 后缀</td></tr>
+      <tr><td><code>AP_PASSWORD</code></td><td><code>12345678</code></td><td>热点密码，至少 8 位</td></tr>
+      <tr><td><code>AP_IP</code></td><td><code>192.168.4.1</code></td><td>热点网关地址，改后访问地址同步变化</td></tr>
+      <tr><td><code>PORT</code></td><td><code>80</code></td><td>HTTP 端口；改成其它端口后访问时要带端口号</td></tr>
+      <tr><td><code>INDEX_FILE</code></td><td><code>web/index.html</code></td><td>访问 <code>/</code> 时返回的首页</td></tr>
+    </table>
+    <p>STA 模式的账号密码写在 <code>_switch_to_sta()</code> 里的 <code>STA_SSID</code> / <code>STA_PASSWORD</code>。这些常量只在应用启动时读取一次，修改后需要重启应用。</p>
+
+    <h3>改关卡或换成自己的页面</h3>
+    <ul>
+      <li>6 个关卡都在 <code>index.html</code> 的 <code>levels</code> 数组里，每项包含 <code>title</code>、<code>brief</code>、<code>mission</code>、<code>hint</code>、<code>html</code>、<code>css</code> 和 <code>check</code>；<code>check(html, css)</code> 返回 <code>true</code> 表示过关。</li>
+      <li>增删关卡时同步修改数组即可，不需要改 <code>web.py</code>。完成记录按关卡序号保存在浏览器里，调整顺序后旧记录可能对不上。</li>
+      <li>想换成自己的网页：直接用新页面替换 <code>web/index.html</code>，或修改 <code>INDEX_FILE</code> 指向别的文件；页面放在 <code>/web</code> 目录下，用相对路径引用同目录资源即可。</li>
+      <li>HTTP 服务会把 <code>/xxx</code> 映射到设备上的 <code>web/xxx</code>，例如 <code>http://192.168.4.1/logo.png</code> 读取 <code>web/logo.png</code>；带 <code>..</code> 的路径会被拒绝。响应带 <code>Cache-Control: no-store</code>，改完文件刷新页面就能看到。</li>
+    </ul>
+
+    <h2>常见问题</h2>
+    <h3>手机搜不到 MP-AP-... 热点</h3>
+    <p>确认应用已经启动，墨水屏上显示了热点名称和密码；设备使用 2.4GHz Wi-Fi。若仍然搜不到，重启设备；如果之前按过 BOOT，可能已经切换到 STA 模式，检查屏幕显示的是热点信息还是 IP 信息。</p>
+
+    <h3>连上热点后打不开 192.168.4.1</h3>
+    <ul>
+      <li>设备要等手机连上热点后才启动网页服务，连接后等 3~5 秒再刷新。</li>
+      <li>地址必须是 <code>http://192.168.4.1/</code>，不要用 <code>https</code>，也不要加端口号。</li>
+      <li>手机提示「无法上网」时选择保持连接；必要时暂时关闭移动数据，避免浏览器把请求走蜂窝网络。</li>
+      <li>如果之前切换到了 STA 模式，设备会使用路由器分配的 IP；以墨水屏显示的地址为准，重启可恢复 AP 模式。</li>
+    </ul>
+
+    <h3>点击「保存到墨水屏」失败或屏幕没有变化</h3>
+    <ul>
+      <li>确认浏览器地址是 <code>http://192.168.4.1/</code>，不是本地文件或其他网页。</li>
+      <li>确认手机仍连接设备热点，设备没有断电或重启。</li>
+      <li>等待当前上传结束再重试；设备一次只能处理一个请求。</li>
+      <li>页面提示成功但屏幕不动时，先等整屏刷新；仍不动可以查看设备串口日志中的 <code>FAIL...</code> 信息，再重新保存。</li>
+      <li>如果状态显示「截图失败」，先移除外部图片、在线字体等无法离线加载的资源。</li>
+    </ul>
+
+    <h3>提示保存成功，但墨水屏画面没变</h3>
+    <p>多数是缺少屏幕驱动：确认应用中心已安装<strong>必装驱动</strong>，设备上存在 <code>/driver/epd4in2b.py</code>。应用只在启动和保存成功时调用驱动，驱动缺失时网页功能正常，串口会打印「墨水屏刷新失败」。另外整屏刷新需要几秒到十几秒，保存后先等一会儿再判断。</p>
+
+    <h3>屏幕颜色和预览不一样</h3>
+    <p>墨水屏只有红、黑、白三色，预览只是近似模拟。纯红、纯黑、纯白最稳定；浅色可能变白，深色可能变黑，渐变和照片会被二值化。以实际屏幕为准，必要时降低配色复杂度。</p>
+
+    <h3>刷新页面或切换关卡后代码没了？</h3>
+    <p>刷新页面会回到第 1 关模板；切换关卡会载入目标关卡的模板，当前编辑内容会被替换。完成记录保存在当前浏览器的本地存储中，清除站点数据会丢失。重要代码请复制到电脑保存。</p>
+
+    <h3>重启后之前保存的画面还在吗</h3>
+    <p>墨水屏断电后会保留最后显示的画面；但应用重新启动时会先显示 Wi-Fi 热点启动屏，并把启动屏写入 <code>preview.img</code>，之前保存的设计图会被替换。需要时重新打开网页保存一次。</p>
+
+    <h3>怎么修改热点名称和密码</h3>
+    <p>打开应用目录下的 <code>web.py</code>，修改 <code>AP_SSID_PREFIX</code>（热点前缀）和 <code>AP_PASSWORD</code>（至少 8 位），保存到设备后重启（或在文件视图保存后点状态栏「软复位」）。热点名称后面会自动追加芯片 ID 后缀，实际名称以墨水屏显示为准；完整的可修改常量见上面的「源码与自定义」。</p>
+
+    <h3>怎么退出这个应用</h3>
+    <p>网页端没有「退出」按钮，应用会持续运行 HTTP 服务。重启设备可以结束当前运行；如果它被设为默认应用，开机时按住 GPIO39 或 GPIO40（下键或上键）可以跳过默认应用，进入设备端的应用管理器。</p>
+
+    <h2>技术参数</h2>
+    <table>
+      <tr><th>项目</th><th>值</th></tr>
+      <tr><td>屏幕</td><td>4.2 英寸，400×300，黑/白/红三色（GDEY042Z98 / SSD1683）</td></tr>
+      <tr><td>默认热点</td><td><code>MP-AP-XXXXXX</code>，密码 <code>12345678</code>，IP <code>192.168.4.1</code></td></tr>
+      <tr><td>HTTP</td><td>端口 <code>80</code>；静态文件用 GET 提供，保存图像用 <code>POST /save.img</code></td></tr>
+      <tr><td>保存数据</td><td>30000 字节 = 15000 字节黑色位图 + 15000 字节红色位图（1 位/像素）</td></tr>
+      <tr><td>保存文件</td><td><code>preview.img</code></td></tr>
+      <tr><td>屏幕驱动</td><td><code>driver/epd4in2b.py</code>，随「必装驱动」安装</td></tr>
+      <tr><td>网页入口</td><td><code>web/index.html</code></td></tr>
+      <tr><td>STA 示例</td><td><code>XMU</code> / <code>12345678</code>（需在 <code>web.py</code> 中修改）</td></tr>
+    </table>
+  </article>
+
+  <footer>墨水屏应用管理器 · 应用使用说明</footer>
+</div>
+<script src="../help.js"></script>
+</body>
+</html>

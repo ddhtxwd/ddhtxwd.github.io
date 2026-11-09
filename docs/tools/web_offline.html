@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小小网页设计师｜离线 HTML/CSS 编程平台</title>
+<style>
+  :root{
+    --bg:#f5f7fb;
+    --card:#ffffff;
+    --text:#233044;
+    --muted:#6b778c;
+    --line:#dfe5ef;
+    --primary:#4f6bed;
+    --primary2:#6f86ff;
+    --success:#1f9d67;
+    --warning:#f0a202;
+    --danger:#d94a4a;
+    --shadow:0 8px 28px rgba(32,47,74,.10);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(circle at top left, rgba(79,107,237,.08), transparent 28%),
+      radial-gradient(circle at top right, rgba(31,157,103,.06), transparent 24%),
+      var(--bg);
+    min-height:100vh;
+  }
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:18px 24px;
+    background:rgba(255,255,255,.92);
+    backdrop-filter: blur(8px);
+    border-bottom:1px solid var(--line);
+    position:sticky; top:0; z-index:20;
+  }
+  .brand{
+    display:flex; align-items:center; gap:12px;
+  }
+  .logo{
+    width:44px; height:44px; border-radius:14px;
+    display:grid; place-items:center;
+    background:linear-gradient(135deg,var(--primary),var(--primary2));
+    color:white; font-size:24px; box-shadow:var(--shadow);
+  }
+  .brand h1{font-size:20px;margin:0}
+  .brand p{margin:4px 0 0;color:var(--muted);font-size:12px}
+  .top-actions{display:flex;gap:10px;flex-wrap:wrap}
+  button{
+    border:0;border-radius:12px;padding:10px 14px;
+    font-weight:700;cursor:pointer;font-size:14px;
+    transition:.18s transform,.18s box-shadow,.18s background;
+  }
+  button:hover{transform:translateY(-1px)}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-light{background:#eef2ff;color:#3850c7}
+  .btn-ghost{background:#f2f4f8;color:#46546a}
+  .btn-success{background:var(--success);color:#fff}
+  .btn-usb{background:#7a4bdb;color:#fff}
+  .btn-off{background:#e6e9ef;color:#98a2b3;cursor:not-allowed}
+  /* 连接设置条：WiFi 地址 + 串口参数 */
+  .conn-bar{
+    display:flex;flex-wrap:wrap;gap:12px;align-items:center;
+    padding:10px 14px;border-bottom:1px solid var(--line);
+    background:#fbfcff;font-size:13px;color:var(--muted);
+  }
+  .conn-bar label{display:flex;align-items:center;gap:6px}
+  .conn-bar input[type=text],.conn-bar select{
+    padding:5px 8px;border:1px solid var(--line);border-radius:8px;
+    font-size:13px;background:#fff;color:var(--text);
+  }
+  .conn-hint{margin-left:auto}
+  .layout{
+    display:grid;
+    grid-template-columns:260px minmax(320px,1fr) minmax(340px,1.05fr);
+    gap:16px;
+    padding:16px;
+    max-width:1600px;
+    margin:0 auto;
+  }
+  .panel{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .panel-head{
+    padding:14px 16px;
+    border-bottom:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:linear-gradient(180deg,#fff,#fbfcff);
+  }
+  .panel-head h2{font-size:16px;margin:0}
+  .panel-body{padding:14px}
+  .level-list{display:flex;flex-direction:column;gap:8px}
+  .level{
+    width:100%;text-align:left;background:#f7f9fc;color:var(--text);
+    border:1px solid var(--line);padding:12px;border-radius:14px;
+    display:flex;gap:10px;align-items:flex-start;
+  }
+  .level.active{background:#eef2ff;border-color:#b8c4ff}
+  .level.done{background:#edf9f3;border-color:#b9e6cf}
+  .num{
+    width:28px;height:28px;border-radius:9px;display:grid;place-items:center;
+    background:#e8ecf5;font-size:12px;flex:0 0 auto
+  }
+  .level.active .num{background:var(--primary);color:white}
+  .level.done .num{background:var(--success);color:white}
+  .level strong{font-size:14px}
+  .level small{display:block;margin-top:3px;color:var(--muted);line-height:1.45}
+  .mission{
+    background:#fff8e9;border:1px solid #f3d89d;border-radius:14px;
+    padding:12px;margin-bottom:12px;
+  }
+  .mission-title{font-weight:800;margin-bottom:6px}
+  .mission p{margin:0;color:#6d5b2f;font-size:13px;line-height:1.6}
+  .tip{
+    margin-top:10px;
+    background:#eef7ff;border:1px solid #cfe4f7;border-radius:12px;
+    padding:10px;font-size:13px;line-height:1.55;color:#36556d;
+  }
+  .editors{display:grid;grid-template-rows:1fr 1fr;gap:12px;height:calc(100vh - 122px)}
+  .editor-wrap{
+    display:flex;flex-direction:column;min-height:0;border:1px solid var(--line);
+    border-radius:14px;overflow:hidden;background:#0f172a;
+  }
+  .editor-title{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:9px 12px;background:#172033;color:#e5e7eb;font-size:13px;
+  }
+  .editor-title span:last-child{color:#9ca3af;font-size:12px}
+  textarea{
+    flex:1;width:100%;resize:none;border:0;outline:none;
+    padding:14px;background:#0f172a;color:#e5edf9;
+    font-family:Consolas,Monaco,"Courier New",monospace;
+    font-size:15px;line-height:1.55;tab-size:2;
+  }
+  .preview-area{
+    min-height:calc(100vh - 122px);
+    display:flex;flex-direction:column;
+  }
+  .preview-frame-wrap{
+    flex:1;min-height:420px;padding:24px;
+    background:
+      linear-gradient(45deg,#f5f5f5 25%,transparent 25%),
+      linear-gradient(-45deg,#f5f5f5 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#f5f5f5 75%),
+      linear-gradient(-45deg,transparent 75%,#f5f5f5 75%);
+    background-size:24px 24px;
+    background-position:0 0,0 12px,12px -12px,-12px 0px;
+    display:grid;place-items:center;
+  }
+  /* 墨水屏外框：模拟真实 e-Paper 模组的黑色边框 + 排线 */
+  .eink-shell{
+    width:416px;height:316px;
+    background:#1a1a1a;
+    border-radius:8px;
+    padding:8px 8px 18px 8px;
+    box-shadow:0 8px 24px rgba(0,0,0,.22), inset 0 0 0 1px #000;
+    position:relative;
+  }
+  .eink-shell::after{
+    content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+    width:60px;height:8px;background:#3a3a3a;border-radius:0 0 6px 6px;
+  }
+  iframe{
+    width:400px;height:300px;border:0;background:#fff;
+    border-radius:2px;
+    display:block;
+  }
+  .status{
+    padding:12px 14px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap
+  }
+  .status-msg{font-size:14px;font-weight:700}
+  .status-msg.ok{color:var(--success)}
+  .status-msg.no{color:var(--warning)}
+  .progress{
+    height:10px;background:#edf0f5;border-radius:99px;overflow:hidden;flex:1;min-width:180px
+  }
+  .progress > div{height:100%;background:linear-gradient(90deg,var(--primary),var(--success));width:0%;transition:.25s}
+  .cheatsheet{
+    margin-top:12px;border-top:1px dashed var(--line);padding-top:12px
+  }
+  .cheatsheet h3{font-size:13px;margin:0 0 8px}
+  code{
+    background:#f1f3f7;border:1px solid #e1e6ef;border-radius:7px;padding:2px 5px;
+    font-family:Consolas,monospace;font-size:12px;
+  }
+  .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;font-size:12px;color:var(--muted)}
+  .mini-grid div{background:#f8fafc;padding:8px;border-radius:10px;border:1px solid var(--line)}
+  .footer-note{
+    text-align:center;color:var(--muted);font-size:12px;padding:0 16px 18px
+  }
+  .modal{
+    position:fixed;inset:0;background:rgba(18,27,46,.42);
+    display:none;align-items:center;justify-content:center;padding:20px;z-index:50
+  }
+  .modal.show{display:flex}
+  .modal-card{
+    max-width:540px;width:100%;background:#fff;border-radius:20px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.18)
+  }
+  .modal-card h3{margin:0 0 10px;font-size:22px}
+  .modal-card p{color:var(--muted);line-height:1.7}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+  @media(max-width:1050px){
+    .layout{grid-template-columns:230px 1fr}
+    .preview-panel{grid-column:1/-1}
+    .preview-area{min-height:600px}
+  }
+  @media(max-width:760px){
+    header{align-items:flex-start;flex-direction:column}
+    .layout{grid-template-columns:1fr}
+    .editors{height:700px}
+    .preview-panel{grid-column:auto}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">🧩</div>
+    <div>
+      <h1>小小网页设计师</h1>
+      <p>离线 HTML / CSS 编程平台 · AI电子桌牌主题</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button class="btn-light" id="hintBtn">💡 提示</button>
+    <button class="btn-ghost" id="resetBtn">↺ 重置本关</button>
+    <button class="btn-primary" id="checkBtn">✓ 检查任务</button>
+    <button class="btn-success" id="saveBtn"></button>
+    <button class="btn-usb" id="saveUsbBtn">🔌 串口保存</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="panel">
+    <div class="panel-head"><h2>🚀 任务闯关</h2><span id="scoreText">0 / 6</span></div>
+    <div class="panel-body">
+      <div id="missionBox" class="mission"></div>
+      <div id="levelList" class="level-list"></div>
+
+      <div class="cheatsheet">
+        <h3>📚 小抄</h3>
+        <div class="mini-grid">
+          <div><code>&lt;h1&gt;</code><br>大标题</div>
+          <div><code>&lt;p&gt;</code><br>一段文字</div>
+          <div><code>color</code><br>文字颜色</div>
+          <div><code>background</code><br>背景颜色</div>
+          <div><code>border-radius</code><br>圆角</div>
+          <div><code>text-align</code><br>文字对齐</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>⌨️ 编程区</h2><span style="color:var(--muted);font-size:12px">输入后右侧自动更新</span></div>
+    <div class="panel-body">
+      <div class="editors">
+        <div class="editor-wrap">
+          <div class="editor-title"><span>HTML</span><span>网页内容</span></div>
+          <textarea id="htmlEditor" spellcheck="false"></textarea>
+        </div>
+        <div class="editor-wrap">
+          <div class="editor-title"><span>CSS</span><span>网页样式</span></div>
+          <textarea id="cssEditor" spellcheck="false"></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel preview-panel">
+    <div class="panel-head"><h2>📺 墨水屏预览</h2><span style="color:var(--muted);font-size:12px">400×300 · 红黑白三色</span></div>
+    <div class="conn-bar">
+      <label>WiFi 地址<input type="text" id="devBase" size="20" placeholder="http://192.168.4.1"></label>
+      <label>串口波特率
+        <select id="serBaud">
+          <option value="115200" selected>115200（最稳）</option>
+          <option value="230400">230400</option>
+          <option value="460800">460800</option>
+          <option value="921600">921600（看线）</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="restoreSvc" checked> 存完自动恢复 WiFi 服务</label>
+      <span class="conn-hint" id="connHint"></span>
+    </div>
+    <div class="preview-area">
+      <div class="preview-frame-wrap">
+        <div class="eink-shell">
+          <iframe id="preview" sandbox="allow-scripts allow-same-origin"></iframe>
+        </div>
+      </div>
+      <div class="status">
+        <div id="statusMsg" class="status-msg no">开始你的第1关吧！</div>
+        <div class="progress"><div id="progressBar"></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="footer-note">
+  本文件无需联网、无需安装、无需账号。建议使用 Chrome / Edge 浏览器打开。
+</div>
+
+<div id="modal" class="modal">
+  <div class="modal-card">
+    <h3 id="modalTitle">🎉 任务完成</h3>
+    <p id="modalText"></p>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="closeModal">继续修改</button>
+      <button class="btn-success" id="nextBtn">下一关 →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const levels = [
+  {
+    title:"写上我的名字",
+    brief:"认识 <h1> 大标题",
+    mission:"在 HTML 中使用 <h1> 标签，写上你的名字。",
+    hint:"例如：<h1>陈小明</h1>",
+    html:"<h1>我的名字</h1>\n<p>欢迎来到我的电子桌牌！</p>",
+    css:"body {\n  font-family: Arial, sans-serif;\n  text-align: center;\n  padding-top: 60px;\n}",
+    check:(h,c)=>/<h1[\s>][\s\S]*?<\/h1>/i.test(h)
+  },
+  {
+    title:"加上班级信息",
+    brief:"认识 <p> 段落",
+    mission:"在名字下面增加一行班级信息，请使用 <p> 标签。",
+    hint:"例如：<p>三年级2班</p>",
+    html:"<h1>陈小明</h1>\n<p>三年级2班</p>",
+    css:"body {\n  font-family: Arial, sans-serif;\n  text-align: center;\n  padding-top: 60px;\n}",
+    check:(h,c)=>(h.match(/<p[\s>]/gi)||[]).length>=1
+  },
+  {
+    title:"给名字换颜色",
+    brief:"学习 CSS 的 color",
+    mission:"用 CSS 的 color 属性，把 h1 标题变成你喜欢的颜色。",
+    hint:"例如：h1 { color: blue; }",
+    html:"<h1>陈小明</h1>\n<p>三年级2班</p>",
+    css:"body {\n  font-family: Arial, sans-serif;\n  text-align: center;\n  padding-top: 60px;\n}\n\nh1 {\n  \n}",
+    check:(h,c)=>/h1\s*\{[\s\S]*?color\s*:\s*[^;}\n]+/i.test(c)
+  },
+  {
+    title:"设计桌牌背景",
+    brief:"学习 background",
+    mission:"用 background 或 background-color 给网页增加背景颜色。",
+    hint:"例如：body { background: lightblue; }",
+    html:"<div class=\"card\">\n  <h1>陈小明</h1>\n  <p>三年级2班</p>\n</div>",
+    css:"body {\n  font-family: Arial, sans-serif;\n  text-align: center;\n  padding-top: 60px;\n}\n\nh1 {\n  color: blue;\n}",
+    check:(h,c)=>/background(?:-color)?\s*:\s*[^;}\n]+/i.test(c)
+  },
+  {
+    title:"做一张圆角卡片",
+    brief:"学习 class 与圆角",
+    mission:"给 .card 添加 border-radius，让电子桌牌变成圆角卡片。",
+    hint:"例如：.card { border-radius: 20px; }",
+    html:"<div class=\"card\">\n  <h1>陈小明</h1>\n  <p>三年级2班</p>\n  <p>⭐ 保持好奇，快乐创造！</p>\n</div>",
+    css:"body {\n  font-family: Arial, sans-serif;\n  background: #eef3ff;\n  text-align: center;\n  padding: 60px 20px;\n}\n\n.card {\n  background: white;\n  max-width: 500px;\n  margin: auto;\n  padding: 35px;\n}\n\nh1 {\n  color: #4f6bed;\n}",
+    check:(h,c)=>/\.card\s*\{[\s\S]*?border-radius\s*:\s*[^;}\n]+/i.test(c)
+  },
+  {
+    title:"完成我的电子桌牌",
+    brief:"综合设计挑战",
+    mission:"自由美化作品：请同时使用 color、background 和 border-radius，完成你的专属电子桌牌。",
+    hint:"可以再试试 font-size、box-shadow、padding、border 等属性。",
+    html:"<div class=\"card\">\n  <div class=\"avatar\">🤖</div>\n  <h1>陈小明</h1>\n  <p class=\"class-name\">三年级2班</p>\n  <p>我的梦想：成为小小发明家！</p>\n  <p class=\"motto\">⭐ 保持好奇，快乐创造 ⭐</p>\n</div>",
+    css:"body {\n  font-family: Arial, sans-serif;\n  text-align: center;\n  padding: 60px 20px;\n}\n\n.card {\n  max-width: 520px;\n  margin: auto;\n  padding: 36px;\n}\n\n.avatar {\n  font-size: 64px;\n}\n\nh1 {\n  font-size: 42px;\n}",
+    check:(h,c)=>/color\s*:/i.test(c)&&/background(?:-color)?\s*:/i.test(c)&&/border-radius\s*:/i.test(c)
+  }
+];
+
+let current = 0;
+let done = new Set();
+const htmlEditor = document.getElementById("htmlEditor");
+const cssEditor = document.getElementById("cssEditor");
+const preview = document.getElementById("preview");
+const levelList = document.getElementById("levelList");
+const missionBox = document.getElementById("missionBox");
+const statusMsg = document.getElementById("statusMsg");
+const progressBar = document.getElementById("progressBar");
+const scoreText = document.getElementById("scoreText");
+const modal = document.getElementById("modal");
+
+function safe(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function renderLevels(){
+  levelList.innerHTML="";
+  levels.forEach((lv,i)=>{
+    const b=document.createElement("button");
+    b.className="level"+(i===current?" active":"")+(done.has(i)?" done":"");
+    b.innerHTML=`<span class="num">${done.has(i)?"✓":i+1}</span>
+      <span><strong>${lv.title}</strong><small>${lv.brief}</small></span>`;
+    b.onclick=()=>loadLevel(i,true);
+    levelList.appendChild(b);
+  });
+  scoreText.textContent=`${done.size} / ${levels.length}`;
+  progressBar.style.width=`${done.size/levels.length*100}%`;
+}
+
+function loadLevel(i, keep=false){
+  current=i;
+  const lv=levels[i];
+  missionBox.innerHTML=`<div class="mission-title">第 ${i+1} 关：${lv.title}</div><p>${safe(lv.mission)}</p>`;
+  if(!keep || !htmlEditor.value){
+    htmlEditor.value=lv.html;
+    cssEditor.value=lv.css;
+  }else{
+    htmlEditor.value=lv.html;
+    cssEditor.value=lv.css;
+  }
+  statusMsg.className="status-msg no";
+  statusMsg.textContent="修改代码，然后点击“检查任务”";
+  renderLevels();
+  updatePreview();
+}
+
+function updatePreview(){
+  const doc=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+  *{box-sizing:border-box}
+  html,body{margin:0;width:400px;height:300px;overflow:hidden}
+  /* 墨水屏滤镜：把彩色映射为 红/黑/白 三色 */
+  body{filter:url(#eink3c)}
+  ${cssEditor.value}
+  </style>
+  <svg style="position:absolute;width:0;height:0">
+    <!-- 三色化滤镜：必须用 sRGB，否则默认 linearRGB 会改变阈值，与截图代码不一致 -->
+    <filter id="eink3c" color-interpolation-filters="sRGB">
+      <!-- 1) 红色度放进 R 与 A 通道：redness = R - 0.5G - 0.5B
+           注意：不能再先 saturate=0 去色！纯红去色后亮度只有 0.3，
+           会与黑色混在一起，预览和墨水屏都会把红色当成黑色 -->
+      <feColorMatrix in="SourceGraphic" result="redRaw" type="matrix"
+        values="1 -0.5 -0.5 0 0
+                0  0    0    0 0
+                0  0    0    0 0
+                1 -0.5 -0.5 0 0"/>
+      <!-- 2) 红色度 >=0.5 → 不透明的纯红遮罩，其余全透明 -->
+      <feComponentTransfer in="redRaw" result="redLayer">
+        <feFuncR type="discrete" tableValues="0 1"/>
+        <feFuncG type="discrete" tableValues="0 0"/>
+        <feFuncB type="discrete" tableValues="0 0"/>
+        <feFuncA type="discrete" tableValues="0 1"/>
+      </feComponentTransfer>
+      <!-- 3) 亮度二值化：暗→黑，亮→白 -->
+      <feColorMatrix in="SourceGraphic" result="gray" type="matrix"
+        values="0.299 0.587 0.114 0 0
+                0.299 0.587 0.114 0 0
+                0.299 0.587 0.114 0 0
+                0     0     0     1 0"/>
+      <feComponentTransfer in="gray" result="bw">
+        <feFuncR type="discrete" tableValues="0 1"/>
+        <feFuncG type="discrete" tableValues="0 1"/>
+        <feFuncB type="discrete" tableValues="0 1"/>
+        <feFuncA type="discrete" tableValues="0 1"/>
+      </feComponentTransfer>
+      <!-- 4) 红遮罩盖在黑白之上（红色优先级高于白） -->
+      <feMerge>
+        <feMergeNode in="bw"/>
+        <feMergeNode in="redLayer"/>
+      </feMerge>
+    </filter>
+  </svg>
+  </head><body>${htmlEditor.value}</body></html>`;
+  preview.srcdoc=doc;
+  localStorage.setItem("kidHtmlEditor", htmlEditor.value);
+  localStorage.setItem("kidCssEditor", cssEditor.value);
+}
+
+function showHint(){
+  const lv=levels[current];
+  statusMsg.className="status-msg no";
+  statusMsg.innerHTML="💡 "+safe(lv.hint);
+}
+
+function checkTask(){
+  const ok=levels[current].check(htmlEditor.value,cssEditor.value);
+  if(ok){
+    done.add(current);
+    localStorage.setItem("kidDone", JSON.stringify([...done]));
+    statusMsg.className="status-msg ok";
+    statusMsg.textContent="✓ 太棒了，这一关完成！";
+    renderLevels();
+    document.getElementById("modalTitle").textContent=current===levels.length-1?"🏆 全部完成！":"🎉 任务完成";
+    document.getElementById("modalText").textContent=current===levels.length-1
+      ?"你已经完成全部 HTML/CSS 挑战，可以继续自由设计属于自己的电子桌牌。"
+      :"你已经掌握了这一关的知识点。可以继续修改作品，也可以进入下一关。";
+    document.getElementById("nextBtn").textContent=current===levels.length-1?"返回第1关":"下一关 →";
+    modal.classList.add("show");
+  }else{
+    statusMsg.className="status-msg no";
+    statusMsg.textContent="还差一点点，点“提示”看看吧！";
+  }
+}
+
+function resetLevel(){
+  if(confirm("确定要把本关代码恢复到初始状态吗？")){
+    htmlEditor.value=levels[current].html;
+    cssEditor.value=levels[current].css;
+    updatePreview();
+  }
+}
+
+/* =========================================================
+ * 生成墨水屏图像数据（WiFi / 串口 两条通道共用）
+ * 流程：
+ *  1) 读取 iframe 内 DOM，用 SVG foreignObject 渲染到 400×300 canvas
+ *  2) 取像素，先按色度判红、再按亮度分黑白（黑/红/白三色）
+ *  3) 生成两个 1bit/pixel 位图缓冲：blackBuffer + redBuffer
+ * 返回 Uint8Array(30000)，失败返回 null（原因已写进状态栏）
+ * ========================================================= */
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+async function buildEinkPayload(){
+  const W=400, H=300;
+  statusMsg.className="status-msg no";
+  statusMsg.textContent="正在生成图像...";
+
+  // ---- 1) 把 iframe 内容画到 canvas ----
+  let canvas;
+  try{
+    const doc=preview.contentDocument;
+    if(!doc||!doc.body){ throw new Error("无法读取预览内容"); }
+    // 克隆 iframe 的 html 元素，构造 SVG foreignObject
+    const xs=new XMLSerializer();
+    const innerHtml=xs.serializeToString(doc.documentElement);
+
+    // 内嵌 iframe 已有的 <style>，确保截图样式不丢
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+      <foreignObject width="100%" height="100%">
+        ${innerHtml}
+      </foreignObject>
+    </svg>`;
+    const svgUrl="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+
+    const img=new Image();
+    img.crossOrigin="anonymous";
+    await new Promise((res,rej)=>{
+      img.onload=res;
+      img.onerror=()=>rej(new Error("SVG 渲染失败"));
+      img.src=svgUrl;
+    });
+
+    canvas=document.createElement("canvas");
+    canvas.width=W; canvas.height=H;
+    const ctx=canvas.getContext("2d");
+    // 先填白底（墨水屏默认底色）
+    ctx.fillStyle="#ffffff";
+    ctx.fillRect(0,0,W,H);
+    ctx.drawImage(img,0,0,W,H);
+  }catch(e){
+    statusMsg.textContent="截图失败："+e.message;
+    return null;
+  }
+
+  // ---- 2) 三色化：先按色度判红、再按亮度分黑白 ----
+  // 关键修正：不能只看亮度！纯红 (255,0,0) 的亮度只有 76，
+  // 用 gray<80 判定会把红色归到黑色——这就是“红色显示成黑色”的原因。
+  // 下面的两个公式与预览滤镜 #eink3c 的 feColorMatrix 完全一致，
+  // 保证网页预览和墨水屏输出得到相同结果。
+  const ctx=canvas.getContext("2d");
+  const imgData=ctx.getImageData(0,0,W,H);
+  const px=imgData.data;
+  const totalPx=W*H;             // 120000 像素
+  const byteLen=Math.ceil(totalPx/8); // 每位图 15000 字节
+  const blackBuf=new Uint8Array(byteLen);
+  const redBuf=new Uint8Array(byteLen);
+
+  for(let i=0;i<totalPx;i++){
+    const r=px[i*4], g=px[i*4+1], b=px[i*4+2], a=px[i*4+3];
+    let isBlack=false, isRed=false;
+    if(a>=128){                   // 透明当作白底（canvas 已先填白）
+      // 红色度：等同 feColorMatrix "1 -0.5 -0.5 0 0"
+      const redness=r-0.5*(g+b);
+      // 亮度：等同预览里的灰度矩阵
+      const lum=0.299*r+0.587*g+0.114*b;
+      if(redness>=127.5){ isRed=true; }      // 偏红 → 红通道
+      else if(lum<127.5){ isBlack=true; }    // 不红且偏暗 → 黑
+      // 其余保持白
+    }
+    const byteIdx=i>>3;                // i/8
+    const bitIdx=7-(i&7);              // 高位在前
+    const mask=1<<bitIdx;
+    if(isBlack) blackBuf[byteIdx]|=mask;
+    if(isRed)   redBuf[byteIdx]|=mask;
+  }
+
+  // ---- 3) 拼接：[blackBuf][redBuf] ----
+  const payload=new Uint8Array(byteLen*2);
+  payload.set(blackBuf, 0);
+  payload.set(redBuf, byteLen);
+  return payload;
+}
+
+/* =========================================================
+ * 通道 A：WiFi 分段上传（每 1000 字节一片 POST 到 /upload.chunk）
+ * ESP32 端逐片追加写入 preview.img，最后一片接收完成后刷新墨水屏
+ * （分段可降低 ESP32 单次接收内存压力，并避免 recv 超时）
+ * 页面从 file:// 打开时相对地址无效，所以用「WiFi 地址」输入框拼绝对地址
+ * ========================================================= */
+function deviceBase(){
+  let b=(inpDevBase.value||"").trim().replace(/\/+$/,"");
+  if(!b) b=(location.protocol==="file:"||!location.host)?"http://192.168.4.1":location.origin;
+  return b;
+}
+
+async function saveToEink(){
+  const payload=await buildEinkPayload();
+  if(!payload) return;
+  const base=deviceBase();
+
+  // ---- 4) 按 1000 字节分段 POST ----
+  const CHUNK=1000;
+  const total=payload.length;
+  const chunks=Math.ceil(total/CHUNK);
+  const t0=Date.now();
+  let restart=0, lastErr="";
+
+  // 分段上传容易因单次连接波动失败，失败后从第 0 段整体重传
+  // （服务端收到 X-Chunk-Index:0 会截断重写，不会遗留脏数据）
+  while(restart<3){
+    restart++;
+    let ok=true;
+    for(let idx=0, off=0; off<total; idx++, off+=CHUNK){
+      const piece=payload.subarray(off, Math.min(off+CHUNK, total));
+      const isLast=(off+CHUNK>=total);
+      const expect=Math.min(off+CHUNK, total);
+      statusMsg.textContent="正在通过 WiFi 上传... 第"+(idx+1)+"/"+chunks+" 段"+(restart>1?" (重试"+restart+")":"");
+      let resp, txt;
+      try{
+        resp=await fetch(base+"/upload.chunk",{
+          method:"POST",
+          headers:{
+            "Content-Type":"application/octet-stream",
+            "X-Chunk-Index":String(idx),
+            "X-Chunk-Last":isLast?"1":"0"
+          },
+          body:piece
+        });
+        txt=await resp.text();
+      }catch(err){
+        lastErr="第"+(idx+1)+"/"+chunks+" 段网络错误: "+err.name+" "+err.message+"（地址 "+base+" 是否可达？）";
+        ok=false; break;
+      }
+      if(!resp.ok){
+        lastErr="第"+(idx+1)+"/"+chunks+" 段失败: HTTP "+resp.status+" "+txt;
+        ok=false; break;
+      }
+      // 进度条临时显示上传进度
+      progressBar.style.width=(expect/total*100)+"%";
+      // 服务端回显已落盘字节数，校验偏移对齐
+      const m=txt.match(/(\d+)\/\d+/);
+      if(!m){ lastErr="第"+(idx+1)+" 段响应异常: "+txt; ok=false; break; }
+      if(parseInt(m[1],10)!==expect){
+        lastErr="服务端偏移不一致(第"+(idx+1)+"段已收"+m[1]+"，期望"+expect+")";
+        ok=false; break;
+      }
+      lastErr="";
+    }
+    if(ok){
+      statusMsg.className="status-msg ok";
+      statusMsg.textContent="✓ 已保存到墨水屏 ("+total+" 字节 / "+chunks+" 段, "+((Date.now()-t0)/1000).toFixed(1)+"s)";
+      break;
+    }
+    if(restart<3) await sleep(400);
+  }
+
+  if(lastErr){
+    statusMsg.className="status-msg no";
+    statusMsg.textContent="上传失败："+lastErr+"（已重试 3 次，也可改用 🔌 串口保存）";
+  }
+
+  // 还原进度条为任务完成度
+  progressBar.style.width=done.size/levels.length*100+"%";
+}
+
+/* =========================================================
+ * 通道 B：Web 串口保存（CH340 / CP210x / FT232 这类 USB 转串口都能用）
+ * 走 MicroPython 的 raw REPL，和 mpremote 传文件同一套路：
+ *   拿到 >>> 提示符 → Ctrl-A 进 raw REPL → 非空小程序探针
+ *   → 发接收程序 + Ctrl-D 执行 → 逐行发 hex（每行一个 '+' 做流控）
+ *   → 设备写 preview.img 并直接刷屏 → 可选重启 HTTP 服务
+ * 要点：
+ *  - navigator.serial 只在安全上下文存在（file:// / https / localhost），
+ *    从 http://192.168.4.1 打开的页面里它是 undefined，且只有 Chrome/Edge 支持；
+ *  - 串口一次只能被一个程序占用，Thonny / 串口监视器必须先断开；
+ *  - 传输期间 HTTP 服务被 Ctrl-C 暂停（AP 本身还在，WiFi 不会掉线）；
+ *  - 恢复服务走 main.start_server()，不重跑开机屏，不会覆盖刚存好的图。
+ * ========================================================= */
+const inpDevBase = document.getElementById("devBase");
+const selSerBaud = document.getElementById("serBaud");
+const chkRestore = document.getElementById("restoreSvc");
+const saveUsbBtn = document.getElementById("saveUsbBtn");
+const connHint   = document.getElementById("connHint");
+
+const SER={ port:null, reader:null, writer:null, alive:false, text:"", plus:0, wakers:[] };
+const _enc=new TextEncoder();
+
+function serReset(){ SER.text=""; SER.plus=0; SER.wakers=[]; }
+
+// 有新数据就叫醒在等的 serUntil，避免用轮询拖慢每个 ack 的往返
+function serWakeAll(){ const w=SER.wakers; SER.wakers=[]; for(const f of w) f(); }
+
+// raw REPL 的输出是 ASCII，直接拼成文本方便正则匹配；同时统计 '+' 回显个数
+function serFeed(u8){
+  let s="";
+  for(let i=0;i<u8.length;i++) s+=String.fromCharCode(u8[i]);
+  SER.text+=s;
+  if(SER.text.length>16000) SER.text=SER.text.slice(-8000);
+  for(let i=0;i<u8.length;i++) if(u8[i]===43) SER.plus++;
+  serWakeAll();
+}
+
+// 后台读泵：字节一到手就喂进 SER.text。
+// 为什么不用“超时抛弃 read() promise”的写法：那种写法一旦超时，
+// 稍后 resolving 的那个 promise 没人 await，尾巴字节就永久丢了（会吃 '+'）。
+function serStartPump(){
+  SER.alive=true;
+  (async()=>{
+    while(SER.alive && SER.reader){
+      let r;
+      try{ r=await SER.reader.read(); }
+      catch(e){ break; }
+      if(!SER.alive) break;
+      if(r.done) break;
+      if(r.value && r.value.length) serFeed(r.value);
+    }
+    SER.alive=false;
+    serWakeAll();
+  })();
+}
+
+async function serWrite(s){
+  await SER.writer.write(typeof s==="string"?_enc.encode(s):s);
+}
+
+// 等到 cond() 成立返回 true；超时或读泵已停返回 false
+async function serUntil(cond, totalMs){
+  const t0=Date.now();
+  while(!cond(SER)){
+    const left=totalMs-(Date.now()-t0);
+    if(left<=0) return false;
+    await Promise.race([new Promise(res=>SER.wakers.push(res)), sleep(Math.min(left,50))]);
+  }
+  return true;
+}
+
+// 把设备侧的报错摘出来，方便定位
+function serErrorTail(){
+  const m=SER.text.match(/(Traceback[\s\S]*|SyntaxError[^\r\n]*|MemoryError[^\r\n]*|EPDERR[^\r\n]*)/);
+  return m?m[1].replace(/\r?\n/g," | ").slice(0,200):"";
+}
+
+/* 状态栏给手机/小窗口看，长文本容易被看半截，所以报错要短、且关键信息放最前面。
+ * 浏览器串口层报错常常是 DOMException：name 有值但 message 是空串，
+ * 直接用 e.message 会只剩“串口保存失败：”什么都不剩，所以必须兼容 name/stack。 */
+function describeErr(e){
+  if(e===null||e===undefined) return "未知错误（异常对象为空）";
+  if(typeof e==="string") return e.trim()||"空错误字符串（看浏览器控制台）";
+  const msg=(e.message||"").trim();
+  if(msg) return ((e.name&&e.name!=="Error")?e.name+" ":"")+msg;
+  // message 为空时才是难点：name 单独丢给用户没意义，翻译成人话
+  const map={NetworkError:"串口链路断了（USB 掉线/设备复位/供电不够）",InvalidStateError:"端口状态不对（被其它程序占用，刷新页面重试）",NotSupportedError:"系统拒绝访问该串口（驱动被占用或权限问题）",AbortError:"操作被打断"};
+  if(map[e.name]) return map[e.name];
+  if(e.name) return e.name+"（无文字说明，已输出到浏览器控制台）";
+  if(e.stack) return String(e.stack).split("\n").slice(0,2).join(" | ");
+  return "异常无文字信息，已输出到浏览器控制台（按 F12 看 [串口保存] 那行）";
+}
+
+/* 刷屏失败的结论：把“缺哪个模块”顶到最前面，补充信息依次往后 */
+function epdFailText(){
+  const t=SER.text;
+  const mod=(t.match(/no module named ['"]?([^'"\r\n]+)/)||[])[1];
+  const hasFile=(t.match(/EPDFILE\s+(True|False)/)||[])[1];
+  const from=(t.match(/File "([^"]+)", line \d+/g)||[]).slice(-1)[0]||"";
+  const reason=mod?("找不到模块 "+JSON.stringify(mod))
+    :((t.match(/EPDERR[^\r\n]*/)||["设备未给出原因"])[0]);
+  let s="图像已存进 preview.img，刷屏差最后一步："+reason;
+  if(hasFile) s+=" | 驱动 epd4in2b.py "+(hasFile==="True"?"在设备上":"不在当前目录");
+  if(from) s+=" | 出错位置 "+from;
+  return s;
+}
+
+const HEXD="0123456789abcdef";
+function hexLine(u8){
+  let s="";
+  for(let i=0;i<u8.length;i++){ const v=u8[i]; s+=HEXD[v>>4]+HEXD[v&15]; }
+  return s;
+}
+
+/* 发给设备的接收程序（必须纯 ASCII，别掺中文）
+ * 两个不能用经验想当然的坑：
+ *  1) sys.stdin 是 io.TextIOWrapper，没有 readline()/flush()，只能用 read(n)。
+ *  2) MicroPython 的 read(n) 是“攒够 n 个字节才返回”（不像 CPython 会短读）。
+ *     所以设备每次索取的量必须 ≤ 主机肯心理应已经发出去的量，否则就互等死锁：
+ *     曾经按 32 字节攒行，凑 2 行换行符时正好差 4 字节 -> 设备死等数据、主机死等 ack。
+ * 现在改成定长帧：一行就是 FRAME 个字符（hex 96 + \r\n），没读满不往下走；
+ * 设备索取上限 FRAME=98，主机窗口 2 帧=196 字节（仍小于 UART 环形缓冲 256），恒成立。
+ * 尾巴那一帧由主机补零填充满 96 个 hex，设备写入前裁到 TOTAL，所以不会多存字节。
+ */
+function serialReceiverProgram(total, frame){
+  return [
+    "import sys, os, gc, ubinascii",
+    "TOTAL="+total,
+    "FRAME="+frame,
+    "try:",
+    "    rd=sys.stdin.buffer.read",      // 二进制流（老版 / 有 buffer 的端口）
+    "except AttributeError:",
+    "    rd=sys.stdin.read",            // TextIOWrapper：读出来是 str，下面统一转 bytes
+    "def _b(c):",
+    "    if c is None:",
+    "        return b''",
+    "    if isinstance(c, str):",
+    "        return c.encode()",
+    "    return c",
+    "def _need(k):",                    // 只要没读满 k 就接着读；兼容真短读的固件
+    "    b=b''",
+    "    while len(b)<k:",
+    "        c=_b(rd(k-len(b)))",
+    "        if not c:",
+    "            raise OSError('eof')",
+    "        b+=c",
+    "    return b",
+    "got=0",
+    "err=''",
+    "f=None",
+    "try:",
+    "    f=open('preview.img','wb')",
+    "    while got<TOTAL:",
+    "        d=ubinascii.unhexlify(_need(FRAME).strip())",
+    "        if got+len(d)>TOTAL:",
+    "            d=d[:TOTAL-got]",
+    "        f.write(d)",
+    "        got+=len(d)",
+    "        print('+')",
+    "except Exception as e:",
+    "    err=repr(e)",
+    "if f:",                             // 出错也要 close：否则半截文件句柄挂在设备上，下次重传受影响
+    "    try:",
+    "        f.close()",
+    "    except Exception as e:",
+    "        err=err or repr(e)",
+    "print('SOK',got,err)",
+    "if got==TOTAL and not err:",
+    "    gc.collect()",
+    "    try:",
+    "        from driver import epd4in2b",
+    "        e=epd4in2b.EPD()",
+    "        e.init()",
+    "        e.display_file('preview.img')",
+    "        print('EPD OK')",
+    "    except Exception as ex:",
+    "        print('EPDERR',repr(ex))",
+    "        print('EPDFILE',('epd4in2b.py' in os.listdir('.')))",   // 一句话定位：驱动文件到底在不在
+    "        try:",
+    "            sys.print_exception(ex,sys.stdout)",                // 缺哪个子模块、在哪个文件哪一行，栈里全有
+    "        except Exception:",
+    "            pass",
+    ""
+  ].join("\n");
+}
+
+/* 恢复 HTTP 服务：热已开着就只重跑服务循环；没开着则 start_ap 拉起热点。
+ * 两种都走 start_ap/start_server，不碰 show_startup_screen，不会把刚存好的图刷掉。
+ * 注意：这个程序永不返回（服务循环），所以发完不等设备回话。 */
+const RESTORE_CODE=[
+  "import main, network",
+  "if network.WLAN(network.AP_IF).active():",
+  "    main.start_server()",
+  "else:",
+  "    main.start_ap()",
+  "    main.start_server()",
+  ""
+].join("\n");
+
+async function serialHandshake(baud){
+  if(!navigator.serial){
+    throw new Error("本页面拿不到 navigator.serial：Web 串口只在 file:// / https / http://localhost 这种安全上下文里开放，且只有 Chrome / Edge 支持。请双击本地文件打开页面（或给设备配 https）。WiFi 保存不受影响。现在地址："+location.href.slice(0,60));
+  }
+  try{
+    SER.port=await navigator.serial.requestPort();
+  }catch(e){
+    throw new Error(e.name==="NotFoundError"
+      ? "没有选择串口（或在弹窗里点了取消）。确认 CH340 已插好、WCH 驱动已装；若弹窗里一个设备都没有，说明 Chrome 还看不见这个串口。"
+      : "选择串口失败: "+e.name+" "+e.message);
+  }
+  try{
+    await SER.port.open({baudRate:baud, dataBits:8, stopBits:1, parity:"none"});
+  }catch(e){
+    SER.port=null;
+    throw new Error("打开串口失败（多半是被 Thonny / 串口监视器占用，或驱动没绑好）。先关掉其它串口程序再试："+e.name+" "+e.message);
+  }
+  // 注意：port.readable 是 ReadableStream，只有 getReader()；getWriter() 只在 port.writable 上
+  if(!SER.port.writable || !SER.port.readable){
+    SER.port=null;
+    throw new Error("串口打开后拿不到数据流（设备可能刚被拔掉，或端口被其它程序抢关）");
+  }
+  SER.writer=SER.port.writable.getWriter();
+  SER.reader=SER.port.readable.getReader();
+  serReset();
+  serStartPump();
+  connHint.textContent="串口已连接 "+baud;
+
+  // 握手分三步，顺序不能倒：
+  //  1) 先确认拿到了普通 REPL 的 >>> 提示符（反复 Ctrl-C 打断正在跑的 main.py）。
+  //     没确认前绝对不敢发 Ctrl-D！普通 REPL 上 Ctrl-D = 软复位，
+  //     而复位后 MicroPython 会自动重跑 main.py，之前就是这么把状态越搞越乱的。
+  //  2) Ctrl-A 进 raw REPL，以 banner 作确认。
+  //  3) 用“非空小程序”探针：raw REPL 执行完一定会回一个 \x04 终止符，
+  //     而空源码在 raw 模式下不保证有回应，所以探针必须带输出。
+  const echo=()=>SER.text?"设备实际回复："+JSON.stringify(SER.text.slice(0,240)):"设备一个字节也没回（查波特率/接线，当前 "+baud+"）";
+
+  let atPrompt=false;
+  for(let k=0;k<6 && !atPrompt;k++){
+    SER.text="";
+    // 第 0 轮先补一个 Ctrl-B：上一轮失败可能把设备整停在 raw REPL 里出不来
+    await serWrite(k===0?"\x02\r\x03\r":"\r\x03");
+    atPrompt=await serUntil(s=>s.text.indexOf(">>>")>=0, 900);
+  }
+  if(!atPrompt){
+    throw new Error("没拿到 MicroPython 的 >>> 提示符：设备可能在持续刷日志把提示符掉了，或不是 MicroPython。"+echo());
+  }
+
+  SER.text="";
+  await serWrite("\x01");                        // Ctrl-A
+  if(!await serUntil(s=>/raw\s*REPL/i.test(s.text), 1500)){
+    throw new Error("Ctrl-A 后没出现 raw REPL 提示。"+echo());
+  }
+
+  SER.text="";
+  await serWrite('print("MPYRAWPROBE")\n');
+  await serWrite("\x04");                        // Ctrl-D 执行探针
+  if(!await serUntil(s=>/MPYRAWPROBE/.test(s.text) && s.text.indexOf("\x04")>=0, 4000)){
+    throw new Error("raw REPL 探针未通过（应回显 MPYRAWPROBE 和一个 Ctrl-D 终止符）。"+echo());
+  }
+  SER.text="";
+}
+
+async function serialClose(){
+  SER.alive=false;
+  serWakeAll();
+  // 顺序很重要：先 cancel（会把挂着的 read 变成 done，读泵随之退出），再 releaseLock
+  try{ if(SER.reader) await SER.reader.cancel(); }catch(e){}
+  try{ if(SER.reader) SER.reader.releaseLock(); }catch(e){}
+  SER.reader=null;
+  try{ if(SER.writer) await SER.writer.close(); }catch(e){}
+  try{ if(SER.writer) SER.writer.releaseLock(); }catch(e){}
+  SER.writer=null;
+  try{
+    if(SER.port) await SER.port.close();
+  }catch(e){
+    connHint.textContent="串口未能释放（"+e.name+"），刷新页面即可恢复，不影响已存图像";
+  }
+  SER.port=null;
+}
+
+async function saveViaSerial(){
+  if(saveUsbBtn.disabled) return;
+  const baud=parseInt(selSerBaud.value,10);
+  const payload=await buildEinkPayload();
+  if(!payload) return;
+  const total=payload.length;
+
+  saveUsbBtn.disabled=true; saveBtn.disabled=true;
+  saveUsbBtn.textContent="🔌 传输中...";
+  const t0=Date.now();
+  try{
+    await serialHandshake(baud);
+
+    // 3) 发接收程序 + Ctrl-D 执行。每帧 = LINE 字节转 hex(2*LINE 字符) + CRLF。
+    //    帧长必须是主机与设备一致的硬性约定：设备一次读满 FRAME 个字符才 ack。
+    const LINE=48, WINDOW=2, FRAME=LINE*2+2;
+    await serWrite(serialReceiverProgram(total, FRAME));
+    SER.text=""; SER.plus=0;
+    await serWrite("\x04");
+    // 先等 raw REPL 的 OK 再说：它表示源码已被接受、程序即将跑起来。
+    // 不等就发数据，一旦程序根本没编译过，hex 会被当成源码处理，报错也就报不准。
+    if(!await serUntil(s=>/OK/.test(s.text) || /Traceback|SyntaxError|SOK/.test(s.text), 8000)){
+      throw new Error("设备没启动接收程序（没等到 OK）："+(serErrorTail()||SER.text?JSON.stringify(SER.text.slice(0,240)):"设备无回音，试 115200"));
+    }
+    if(/Traceback|SyntaxError/.test(SER.text) && !/OK[\s\S]*SOK/.test(SER.text)){
+      throw new Error("接收程序报错："+(serErrorTail()||SER.text.slice(0,240)));
+    }
+    statusMsg.textContent="正在通过串口传输...";
+
+    // 4) 逐帧 hex，用设备回显的 '+' 做流控。
+    //    两个预算要同时成立：
+    //    a) 在途字节不能超设备 UART 环形缓冲（典型 256）；
+    //    b) 设备一帧索取 FRAME 个字符，主机必须保证至少已发 1 帧、且不催第 2 帧之前的量，
+    //       所以窗口取 2 帧刚好：在途 2*98=196 < 256，而设备索取上限 98 ≤ 196 ✓ 不可能互等。
+    let lines=0;
+    for(let off=0; off<total; off+=LINE){
+      lines++;
+      const chunk=hexLine(payload.subarray(off, Math.min(off+LINE,total)));
+      // 尾巴不满一行时补零填充到整帧（设备写入前裁掉，不会多存一个字节）
+      await serWrite(chunk.padEnd(LINE*2,"0")+"\r\n");
+      if(lines%WINDOW===0){
+        if(!await serUntil(s=>s.plus>=lines || /SOK|Traceback/.test(s.text), 10000)){
+          throw new Error("传到第 "+lines+" 帧就没收到第 "+lines+" 个 ack（已收 "+SER.plus+" 个）。"+
+            "已发 "+(lines*LINE)+"/"+total+" 字节，设备回音："+JSON.stringify(SER.text.slice(0,240)));
+        }
+        if(/SOK|Traceback/.test(SER.text)){
+          throw new Error("设备提前结束接收："+(serErrorTail()||SER.text.slice(-260)));
+        }
+      }
+      progressBar.style.width=(Math.min(off+LINE,total)/total*70)+"%";
+      statusMsg.textContent="正在通过串口传输... "+Math.min(off+LINE,total)+"/"+total+" 字节";
+    }
+
+    // 5) 等设备报接收结果
+    if(!await serUntil(s=>/SOK\s+\d+/.test(s.text), 15000)){
+      throw new Error("没收到设备的接收结果："+(serErrorTail()||SER.text.slice(-160)));
+    }
+    // 注意：这里用 [^\r\n]* 只取 SOK 那一行的尾巴。不能写 \s*(.*)，
+    // \s* 会把换行吃掉，于是下一行的 EPD OK 被当成错误字段，成功也会报失败。
+    const m=SER.text.match(/SOK\s+(\d+)([^\r\n]*)/);
+    const got=parseInt(m[1],10), devErr=(m[2]||"").trim();
+    if(got!==total || devErr){
+      throw new Error("设备只收到 "+got+"/"+total+" 字节"+(devErr?"，错误："+devErr:""));
+    }
+
+    // 6) 刷屏（SSD1683 全刷要几秒，超时给足）
+    statusMsg.textContent="已收满 "+total+" 字节，正在刷新墨水屏（全刷要几秒，请不要关闭页面）...";
+    if(!await serUntil(s=>/EPD OK|EPDERR/.test(s.text), 90000)){
+      throw new Error("刷屏超时：检查墨水屏接线（BUSY/DC/CS）和供电");
+    }
+    if(/EPDERR/.test(SER.text)){
+      throw new Error(epdFailText());
+    }
+
+    // 7) 恢复 HTTP 服务（用 raw REPL 再发一段；它里面不返回，不等回复）
+
+    statusMsg.className="status-msg ok";
+    statusMsg.textContent="✓ 串口保存完成 ("+total+" 字节, "+((Date.now()-t0)/1000).toFixed(1)+"s)";
+  }catch(e){
+    statusMsg.className="status-msg no";
+    statusMsg.textContent="串口保存失败："+describeErr(e);
+    console.error("[串口保存] 异常：",e,"\n设备回音原文：",SER.text);
+    if(connHint.textContent.indexOf("串口已连接")===0) connHint.textContent="串口已释放";
+  }finally{
+    await serialClose();
+    saveUsbBtn.disabled=false;
+    saveBtn.disabled=false;
+    saveUsbBtn.textContent="🔌 串口保存";
+    progressBar.style.width=done.size/levels.length*100+"%";
+  }
+}
+
+/* 页面环境自检：串口可用性 + WiFi 地址默认值 */
+function initConnUI(){
+  inpDevBase.value=(location.protocol==="file:"||!location.host)
+    ? "http://192.168.4.1" : location.origin;
+  if(!navigator.serial){
+    saveUsbBtn.classList.remove("btn-usb");
+    saveUsbBtn.classList.add("btn-off");
+    saveUsbBtn.title="Web 串口需要安全上下文：双击用 file:// 打开本文件，或用 https / http://localhost；http://192.168.4.1 下不可用，且仅 Chrome/Edge 支持";
+    connHint.textContent="本页面环境用不了串口（非安全上下文或非 Chrome/Edge），请用 WiFi 保存";
+    saveUsbBtn.addEventListener("click",()=>{
+      statusMsg.className="status-msg no";
+      statusMsg.textContent="本页面拿不到 navigator.serial：Web 串口只在 file:// / https / http://localhost 下开放，且仅 Chrome / Edge 支持。现在地址是 "+location.href.slice(0,60)+"，WiFi 保存仍可用。";
+    });
+  }else{
+    saveUsbBtn.addEventListener("click",saveViaSerial);
+    connHint.textContent="串口可用：先用 USB 线连好设备，点“串口保存”后在弹窗里选 CH340";
+  }
+}
+initConnUI();
+
+document.getElementById("hintBtn").onclick=showHint;
+document.getElementById("checkBtn").onclick=checkTask;
+document.getElementById("resetBtn").onclick=resetLevel;
+document.getElementById("saveBtn").onclick=saveToEink;
+document.getElementById("closeModal").onclick=()=>modal.classList.remove("show");
+document.getElementById("nextBtn").onclick=()=>{
+  modal.classList.remove("show");
+  loadLevel(current===levels.length-1?0:current+1);
+};
+
+htmlEditor.addEventListener("input",updatePreview);
+cssEditor.addEventListener("input",updatePreview);
+
+htmlEditor.addEventListener("keydown", e=>{
+  if(e.key==="Tab"){
+    e.preventDefault();
+    const s=e.target.selectionStart, en=e.target.selectionEnd;
+    e.target.value=e.target.value.substring(0,s)+"  "+e.target.value.substring(en);
+    e.target.selectionStart=e.target.selectionEnd=s+2;
+    updatePreview();
+  }
+});
+cssEditor.addEventListener("keydown", e=>{
+  if(e.key==="Tab"){
+    e.preventDefault();
+    const s=e.target.selectionStart, en=e.target.selectionEnd;
+    e.target.value=e.target.value.substring(0,s)+"  "+e.target.value.substring(en);
+    e.target.selectionStart=e.target.selectionEnd=s+2;
+    updatePreview();
+  }
+});
+
+try{
+  const savedDone=JSON.parse(localStorage.getItem("kidDone")||"[]");
+  done=new Set(savedDone);
+}catch(e){}
+loadLevel(0);
+</script>
+</body>
+</html>
